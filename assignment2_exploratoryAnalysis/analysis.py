@@ -1,0 +1,40 @@
+import pandas as pd
+
+pd.set_option('display.max_columns', 12)
+pd.set_option('display.width', 1000)
+pd.set_option('display.float_format', lambda x: f'{x:,.2f}')
+df = pd.read_csv('data/Sales-Export_2019-2020.csv')
+df.columns = df.columns.str.strip()
+df['order_value_EUR'] = df['order_value_EUR'].str.replace(',', '').astype(float)
+print(f"Rows: {df.shape[0]}")
+print(f"Columns: {df.shape[1]}")
+print(f"Column names: {df.columns.tolist()}")
+print(df.dtypes)
+print(df.head())
+print(df.isnull().sum())
+print(f"Total missing: {df.isnull().sum().sum()}")
+stats = df[['order_value_EUR', 'cost']].agg(['count', 'mean', 'median', 'min', 'max', 'std'])
+print(stats)
+by_category = df.groupby('category')['order_value_EUR'].agg(['sum', 'mean', 'count'])
+by_category = by_category.sort_values('sum', ascending=False)
+print(by_category)
+max_row = df.loc[df['order_value_EUR'].idxmax()]
+min_row = df.loc[df['order_value_EUR'].idxmin()]
+print(f"Highest: EUR {max_row['order_value_EUR']:,.2f}")
+print(f"   {max_row['country']}, {max_row['category']}, {max_row['date']}, {max_row['device_type']}")
+print(f"Lowest: EUR {min_row['order_value_EUR']:,.2f}")
+print(f"   {min_row['country']}, {min_row['category']}, {min_row['date']}, {min_row['device_type']}")
+avg_order = df['order_value_EUR'].mean()
+threshold = 80000
+if avg_order >= threshold:
+    print(f"Average order is €{avg_order:,.2f}, which exceeds €{threshold:,.0f}. Good performance.")
+else:
+    print(f"Average order is €{avg_order:,.2f}, below €{threshold:,.0f}. Room to improve.")
+print(f"Total records: {len(df)}")
+print(f"Countries: {df['country'].nunique()}")
+print(f"Categories: {df['category'].nunique()}")
+print(f"Average order value: €{avg_order:,.2f}")
+print(f"Top category: {by_category.index[0]} (€{by_category.iloc[0]['sum']:,.2f})")
+by_device = df.groupby('device_type')['order_value_EUR'].agg(['sum', 'mean', 'count'])
+by_device = by_device.sort_values('sum', ascending=False)
+print(by_device)
